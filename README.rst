@@ -19,6 +19,7 @@ How It Works
 There are two functions for sending email in the ``email_extras.utils`` module:
 
     * ``send_mail``
+
     * ``send_mail_template``
 
 The former mimics the signature of ``django.core.mail.send_mail`` while the latter provides the ability to send multipart emails using the Django templating system. If configured correctly, both these functions will PGP encrypt emails as described below.
