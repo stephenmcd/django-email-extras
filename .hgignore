@@ -2,5 +2,4 @@ syntax: glob
 *.pyc
 *.pyo
 dist/*
-MANIFEST
-
+build/*
