@@ -1,17 +1,19 @@
 
-from distutils.core import setup
- 
- 
+from setuptools import setup
+
+
 setup(
     name = "django-email-extras",
     version = __import__("email_extras").__version__,
     author = "Stephen McDonald",
     author_email = "stephen.mc@gmail.com",
-    description = "A Django reusable app providing the ability to send PGP " \
-        "encrypted and multipart emails using the Django templating system.",
+    description = "A Django reusable app providing the ability to "
+                  "send PGP encrypted and multipart emails using "
+                  "the Django templating system.",
     long_description = open("README.rst").read(),
     url = "http://bitbucket.org/citrus/django-email-extras",
     packages = ["email_extras",],
+    install_requires=["python-gnupg", "sphinx-me",],
     classifiers = [
         "Development Status :: 5 - Production/Stable",
         "Environment :: Web Environment",
@@ -23,4 +25,3 @@ setup(
         "Topic :: Security :: Cryptography",
     ]
 )
-
