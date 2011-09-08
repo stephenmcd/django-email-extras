@@ -24,7 +24,7 @@ if USE_GNUPG:
 			else:
 				addresses = []
 				for key in result.results:
-					addresses.extend(addresses_for_key(gpg, key["fingerprint"]))
+					addresses.extend(addresses_for_key(gpg, key))
 				obj.addresses = ",".join(addresses)
 				for address in addresses:
 					Address.objects.get_or_create(address=address)
