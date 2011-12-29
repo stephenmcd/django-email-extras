@@ -1,5 +1,0 @@
-syntax: glob
-*.pyc
-*.pyo
-dist/*
-build/*

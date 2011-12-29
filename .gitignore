@@ -1,0 +1,3 @@
+# When building the distribution, setup_requires pulls in some eggs which can
+# be left out of version control.
+*.egg
