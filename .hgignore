@@ -3,3 +3,4 @@ syntax: glob
 *.pyo
 dist/*
 build/*
+django_email_extras.egg-info/*
