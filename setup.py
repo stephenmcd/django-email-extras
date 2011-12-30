@@ -13,6 +13,8 @@ setup(
     long_description = open("README.rst").read(),
     url = "https://github.com/stephenmcd/django-email-extras",
     packages = ["email_extras",],
+    zip_safe = False,
+    include_package_data = True,
     install_requires=["python-gnupg", "sphinx-me",],
     classifiers = [
         "Development Status :: 5 - Production/Stable",
