@@ -5,7 +5,7 @@ from os.path import basename
 from django.template import loader, Context
 from django.core.mail import EmailMultiAlternatives
 
-from email_extras.settings import USE_GNUPG, GNUPG_HOME
+from email_extras.settings import USE_GNUPG, GNUPG_HOME, ALWAYS_TRUST
 
 
 if USE_GNUPG:
@@ -47,9 +47,13 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
         if valid_key_addresses:
             gpg = GPG(gnupghome=GNUPG_HOME)
 
+    kwargs = {}
+    if ALWAYS_TRUST:
+        kwargs.update({'always_trust':ALWAYS_TRUST})
+
     # Encrypts body if recipient has a gpg key installed.
     encrypt_if_key = lambda body, addr: (body if addr not in valid_key_addresses
-                                         else unicode(gpg.encrypt(body, addr)))
+                                         else unicode(gpg.encrypt(body, addr, **kwargs)))
 
     # Load attachments and create name/data tuples.
     attachments_parts = []
