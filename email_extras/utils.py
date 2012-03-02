@@ -69,7 +69,7 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
         if body_html is not None:
             msg.attach_alternative(encrypt_if_key(body_html, addr), "text/html")
         for parts in attachments_parts:
-            msg.attach(parts[0] if ADD_EXTENSION else parts[0], encrypt_if_key(parts[1], addr))
+            msg.attach(parts[0]+'.asc' if ADD_EXTENSION else parts[0], encrypt_if_key(parts[1], addr))
         msg.send(fail_silently=fail_silently)
 
 
