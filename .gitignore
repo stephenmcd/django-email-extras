@@ -1,2 +1,5 @@
 *.pyc
 *.pyo
+build/
+dist/
+django_email_extras.egg-info/
