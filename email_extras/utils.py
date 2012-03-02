@@ -49,7 +49,7 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
 
     gpg_kwargs = {}
     if ALWAYS_TRUST:
-        kwargs.update({'always_trust':ALWAYS_TRUST})
+        gpg_kwargs.update({'always_trust':ALWAYS_TRUST})
 
     # Encrypts body if recipient has a gpg key installed.
     encrypt_if_key = lambda body, addr: (body if addr not in valid_key_addresses
