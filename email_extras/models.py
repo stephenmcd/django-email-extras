@@ -16,6 +16,9 @@ if USE_GNUPG:
 
         key = models.TextField()
         addresses = models.TextField(editable=False)
+        use_asc = models.BooleanField(default=False, help_text="If True, "
+            "an '.asc' extension will be added to email attachments sent "
+            "to the address for this key.")
 
         def __unicode__(self):
             return self.addresses
@@ -29,7 +32,9 @@ if USE_GNUPG:
                 addresses.extend(addresses_for_key(gpg, key))
             self.addresses = ",".join(addresses)
             for address in addresses:
-                Address.objects.get_or_create(address=address)
+                address, _ = Address.objects.get_or_create(address=address)
+                address.use_asc = self.use_asc
+                address.save()
 
 
     class Address(models.Model):
@@ -42,6 +47,7 @@ if USE_GNUPG:
             verbose_name_plural = "Addresses"
 
         address = models.CharField(max_length=200)
+        use_asc = models.BooleanField(default=False, editable=False)
 
         def __unicode__(self):
             return self.address
