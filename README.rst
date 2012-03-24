@@ -77,6 +77,10 @@ argument, the two template files for the email would be:
   * ``templates/email_extras/contact_form.html``
   * ``templates/email_extras/contact_form.txt``
 
+The ``attachments`` argument is a list of files to attach to the email.
+Each attachment can be the full filesystem path to the file, or a
+file name / file data pair.
+
 The ``context`` argument is simply a dictionary that is used to
 populate the email templates, much like a normal request context
 would be used for a regular Django template.
