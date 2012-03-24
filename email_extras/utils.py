@@ -10,13 +10,13 @@ from email_extras.settings import USE_GNUPG, GNUPG_HOME, ALWAYS_TRUST
 
 if USE_GNUPG:
     from gnupg import GPG
-    from email_extras.models import Address
 
 
 def addresses_for_key(gpg, key):
     """
     Takes a key and extracts the email addresses for it.
     """
+    from email_extras.models import Address
     fingerprint = key["fingerprint"]
     addresses = []
     for key in gpg.list_keys():
@@ -41,6 +41,7 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
     # Obtain a list of the recipients that have gpg keys installed.
     valid_key_addresses = []
     if USE_GNUPG:
+        from email_extras.models import Address
         queryset = Address.objects.filter(address__in=addr_to)
         valid_key_addresses = queryset.values_list("address", flat=True)
         # Create the gpg object.

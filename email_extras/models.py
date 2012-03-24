@@ -2,6 +2,7 @@
 from django.db import models
 
 from email_extras.settings import USE_GNUPG, GNUPG_HOME
+from email_extras.utils import addresses_for_key
 
 
 if USE_GNUPG:
@@ -18,6 +19,17 @@ if USE_GNUPG:
 
         def __unicode__(self):
             return self.addresses
+
+        def save(self, *args, **kwargs):
+            super(Key, self).save(*args, **kwargs)
+            gpg = GPG(gnupghome=GNUPG_HOME)
+            result = gpg.import_keys(self.key)
+            addresses = []
+            for key in result.results:
+                addresses.extend(addresses_for_key(gpg, key))
+            self.addresses = ",".join(addresses)
+            for address in addresses:
+                Address.objects.get_or_create(address=address)
 
 
     class Address(models.Model):
