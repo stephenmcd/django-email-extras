@@ -39,18 +39,18 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
         addr_to = [addr_to]
 
     # Obtain a list of the recipients that have gpg keys installed.
-    valid_key_addresses = []
+    key_addresses = {}
     if USE_GNUPG:
         from email_extras.models import Address
-        queryset = Address.objects.filter(address__in=addr_to)
-        valid_key_addresses = queryset.values_list("address", flat=True)
+        for address in Address.objects.filter(address__in=addr_to):
+            key_addresses[address.address] = address.use_asc
         # Create the gpg object.
-        if valid_key_addresses:
+        if key_addresses:
             gpg = GPG(gnupghome=GNUPG_HOME)
 
     # Encrypts body if recipient has a gpg key installed.
     def encrypt_if_key(body, addr):
-        if addr in valid_key_addresses:
+        if addr in key_addresses:
             return unicode(gpg.encrypt(body, addr, always_trust=ALWAYS_TRUST))
         return body
 
@@ -68,11 +68,14 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
     # Send emails.
     for addr in addr_to:
         msg = EmailMultiAlternatives(subject, encrypt_if_key(body_text, addr),
-            addr_from, [addr])
+                                     addr_from, [addr])
         if body_html is not None:
             msg.attach_alternative(encrypt_if_key(body_html, addr), "text/html")
         for parts in attachments_parts:
-            msg.attach(parts[0], encrypt_if_key(parts[1], addr))
+            name = parts[0]
+            if key_addresses.get(addr):
+                name += ".asc"
+            msg.attach(name, encrypt_if_key(parts[1], addr))
         msg.send(fail_silently=fail_silently)
 
 
