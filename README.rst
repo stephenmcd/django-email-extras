@@ -1,3 +1,5 @@
+Created by `Stephen McDonald <http://twitter.com/stephen_mcd>`_
+
 Introduction
 ============
 
