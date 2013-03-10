@@ -1,5 +1,6 @@
 
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
 
 from email_extras.settings import USE_GNUPG, GNUPG_HOME
 from email_extras.utils import addresses_for_key
@@ -14,11 +15,15 @@ if USE_GNUPG:
         omits saving.
         """
 
+        class Meta:
+            verbose_name = _("Key")
+            verbose_name_plural = _("Keys")
+
         key = models.TextField()
         addresses = models.TextField(editable=False)
-        use_asc = models.BooleanField(default=False, help_text="If True, "
+        use_asc = models.BooleanField(default=False, help_text=_("If True, "
             "an '.asc' extension will be added to email attachments sent "
-            "to the address for this key.")
+            "to the address for this key."))
 
         def __unicode__(self):
             return self.addresses
@@ -43,7 +48,8 @@ if USE_GNUPG:
         """
 
         class Meta:
-            verbose_name_plural = "Addresses"
+            verbose_name = _("Address")
+            verbose_name_plural = _("Addresses")
 
         address = models.CharField(max_length=200)
         use_asc = models.BooleanField(default=False, editable=False)

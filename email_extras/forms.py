@@ -1,5 +1,6 @@
 
 from django import forms
+from django.utils.translation import ugettext_lazy as _
 
 from email_extras.settings import USE_GNUPG, GNUPG_HOME
 
@@ -17,5 +18,5 @@ class KeyForm(forms.ModelForm):
         gpg = GPG(gnupghome=GNUPG_HOME)
         result = gpg.import_keys(key)
         if result.count == 0:
-            raise forms.ValidationError("Invalid Key")
+            raise forms.ValidationError(_("Invalid Key"))
         return key
