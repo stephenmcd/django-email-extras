@@ -1,4 +1,3 @@
-
 from __future__ import with_statement
 from os.path import basename
 
@@ -59,7 +58,7 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
     if attachments is not None:
         for attachment in attachments:
             # Attachments can be pairs of name/data, or filesystem paths.
-            if not hasattr(addr_to, "__iter__"):
+            if not hasattr(attachment, "__iter__"):
                 with open(attachment, "rb") as f:
                     attachments_parts.append((basename(attachment), f.read()))
             else:
