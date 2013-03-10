@@ -1,5 +1,6 @@
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 
 
 GNUPG_HOME = getattr(settings, "EMAIL_EXTRAS_GNUPG_HOME", None)
@@ -11,4 +12,4 @@ if USE_GNUPG:
     try:
         import gnupg
     except ImportError:
-        raise ImproperlyConfigured, "Could not import gnupg"
+        raise ImproperlyConfigured("Could not import gnupg")

@@ -36,7 +36,6 @@ if USE_GNUPG:
                 address.use_asc = self.use_asc
                 address.save()
 
-
     class Address(models.Model):
         """
         Stores the address for a successfully imported key and allows
