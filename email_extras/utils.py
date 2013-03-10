@@ -15,7 +15,6 @@ def addresses_for_key(gpg, key):
     """
     Takes a key and extracts the email addresses for it.
     """
-    from email_extras.models import Address
     fingerprint = key["fingerprint"]
     addresses = []
     for key in gpg.list_keys():
@@ -69,7 +68,8 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
         msg = EmailMultiAlternatives(subject, encrypt_if_key(body_text, addr),
                                      addr_from, [addr])
         if body_html is not None:
-            msg.attach_alternative(encrypt_if_key(body_html, addr), "text/html")
+            body_html = encrypt_if_key(body_html, addr)
+            msg.attach_alternative(body_html, "text/html")
         for parts in attachments_parts:
             name = parts[0]
             if key_addresses.get(addr):
@@ -89,8 +89,9 @@ def send_mail_template(subject, template, addr_from, addr_to,
         context = {}
 
     # Loads a template passing in vars as context.
-    render = lambda f: loader.get_template("email_extras/%s.%s" % (template, f)
-                                                    ).render(Context(context))
+    def render(ext):
+        name = "email_extras/%s.%s" % (template, ext)
+        return loader.get_template(name).render(Context(context))
 
     send_mail(subject, render("txt"), addr_from, addr_to,
               fail_silently=fail_silently, attachments=attachments,

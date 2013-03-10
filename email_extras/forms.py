@@ -19,4 +19,3 @@ class KeyForm(forms.ModelForm):
         if result.count == 0:
             raise forms.ValidationError("Invalid Key")
         return key
-
