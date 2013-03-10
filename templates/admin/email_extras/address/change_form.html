@@ -1,0 +1,16 @@
+{% extends "admin/change_form.html" %}
+
+{% load i18n %}
+
+{% block extrahead %}{{ block.super }}
+<style>
+	.submit-row {display:none;}
+	.submit-row-custom {display:block;}
+</style>
+{% endblock %}
+
+{% block after_related_objects %}{{ block.super }}
+<div class="submit-row submit-row-custom">
+	<p class="deletelink-box"><a href="delete/" class="deletelink">{% trans 'Delete Key for Address' %}</a></p>
+</div>
+{% endblock %}
