@@ -19,14 +19,23 @@ Dependencies
 Installation
 ============
 
-Checkout the source and run ``python setup.py install``. You can
-then add ``email_extras`` to your ``INSTALLED_APPS``.
+The easiest way to install django-email-extras is directly from PyPi
+using `pip <http://www.pip-installer.org/>`_ by running the command
+below::
 
-How It Works
-============
+    $ pip install -U django-email-extras
 
-There are two functions for sending email in the ``email_extras.utils``
-module:
+Otherwise you can download django-email-extras and install it directly
+from source::
+
+    $ python setup.py install
+
+Usage
+=====
+
+Once installed, first add ``email_extras`` to your ``INSTALLED_APPS``
+setting. Then there are two functions for sending email in the
+``email_extras.utils`` module:
 
   * ``send_mail``
   * ``send_mail_template``
@@ -37,7 +46,7 @@ using the Django templating system. If configured correctly, both
 these functions will PGP encrypt emails as described below.
 
 Sending PGP Encrypted Email
----------------------------
+===========================
 
 `PGP explanation <http://en.wikipedia.org/wiki/Pretty_Good_Privacy>`_
 
@@ -59,12 +68,13 @@ When an ``Address`` is deleted via the Django Admin, the key is
 removed from the key ring on the server.
 
 Sending Multipart Email with Django Templates
----------------------------------------------
+=============================================
 
 As mentioned above, the following function is provided in
 the ``email_extras.utils`` module::
 
-  send_mail_template(subject, template, addr_from, addr_to, fail_silently=False, attachments=None, context=None)
+  send_mail_template(subject, template, addr_from, addr_to,
+      fail_silently=False, attachments=None, context=None)
 
 The arguments that differ from ``django.core.mail.send_mail`` are
 ``template`` and ``context``. The ``template`` argument is simply
