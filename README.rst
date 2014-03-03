@@ -74,7 +74,8 @@ As mentioned above, the following function is provided in
 the ``email_extras.utils`` module::
 
   send_mail_template(subject, template, addr_from, addr_to,
-      fail_silently=False, attachments=None, context=None)
+      fail_silently=False, attachments=None, context=None,
+      headers=None)
 
 The arguments that differ from ``django.core.mail.send_mail`` are
 ``template`` and ``context``. The ``template`` argument is simply
@@ -96,6 +97,10 @@ file name / file data pair.
 The ``context`` argument is simply a dictionary that is used to
 populate the email templates, much like a normal request context
 would be used for a regular Django template.
+
+The ``headers`` argument is a dictionary of extra headers to put on
+the message. The keys are the header name and values are the header
+values.
 
 Configuration
 =============
