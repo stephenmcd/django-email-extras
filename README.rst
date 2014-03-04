@@ -10,11 +10,16 @@ separately. When configured to send PGP encrypted email,
 the ability for Admin users to manage PGP keys is also
 provided.
 
+A tool for automatically opening multipart emails in a
+local web browser during development is also provided.
+
+
 Dependencies
 ============
 
   * `python-gnupg <http://code.google.com/p/python-gnupg/>`_ is
     required for sending PGP encrypted email.
+
 
 Installation
 ============
@@ -30,6 +35,7 @@ from source::
 
     $ python setup.py install
 
+
 Usage
 =====
 
@@ -44,6 +50,7 @@ The former mimics the signature of ``django.core.mail.send_mail``
 while the latter provides the ability to send multipart emails
 using the Django templating system. If configured correctly, both
 these functions will PGP encrypt emails as described below.
+
 
 Sending PGP Encrypted Email
 ===========================
@@ -66,6 +73,7 @@ The ``Address`` model is then used when sending email to check for
 an existing key to determine whether an email should be encrypted.
 When an ``Address`` is deleted via the Django Admin, the key is
 removed from the key ring on the server.
+
 
 Sending Multipart Email with Django Templates
 =============================================
@@ -102,11 +110,12 @@ The ``headers`` argument is a dictionary of extra headers to put on
 the message. The keys are the header name and values are the header
 values.
 
+
 Configuration
 =============
 
 There are two settings you can configure in your project's
-``settings`` module:
+``settings.py`` module:
 
   * ``EMAIL_EXTRAS_USE_GNUPG`` - Boolean that controls whether the PGP
     encryption features are used. Defaults to ``True`` if
@@ -115,3 +124,20 @@ There are two settings you can configure in your project's
     for the GNUPG keyring.
   * ``EMAIL_EXTRAS_ALWAYS_TRUST_KEYS`` - Skip key validation and assume
     that used keys are always fully trusted.
+
+
+Local Browser Testing
+=====================
+
+When sending multipart emails during development, it can be useful
+to view the HTML part of the email in a web browser, without having
+to actually send emails and open them in a mail client. To use
+this feature during development, simply set your email backend as follows
+in your development ``settings.py`` module::
+
+  EMAIL_BACKEND = 'email_extras.backends.BrowsableEmailBackend'
+
+With this configured, each time a multipart email is sent, it will
+be written to a temporary file, which is then automatically opened
+in a local web browser. Suffice to say, this should only be enabled
+during development!
