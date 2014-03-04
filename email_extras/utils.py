@@ -25,7 +25,8 @@ def addresses_for_key(gpg, key):
 
 
 def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
-              attachments=None, body_html=None, connection=None):
+              attachments=None, body_html=None, connection=None,
+              headers=None):
     """
     Sends a multipart email containing text and html versions which
     are encrypted for each recipient that has a valid gpg key
@@ -66,7 +67,8 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
     # Send emails.
     for addr in addr_to:
         msg = EmailMultiAlternatives(subject, encrypt_if_key(body_text, addr),
-                                     addr_from, [addr], connection=connection)
+                                     addr_from, [addr], connection=connection,
+                                     headers=headers)
         if body_html is not None:
             body_html = encrypt_if_key(body_html, addr)
             msg.attach_alternative(body_html, "text/html")
@@ -79,7 +81,8 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
 
 
 def send_mail_template(subject, template, addr_from, addr_to,
-                       fail_silently=False, attachments=None, context=None, connection=None):
+                       fail_silently=False, attachments=None, context=None,
+                       connection=None, headers=None):
     """
     Send email rendering text and html versions for the specified
     template name using the context dictionary passed in.
@@ -95,4 +98,5 @@ def send_mail_template(subject, template, addr_from, addr_to,
 
     send_mail(subject, render("txt"), addr_from, addr_to,
               fail_silently=fail_silently, attachments=attachments,
-              body_html=render("html"), connection=connection)
+              body_html=render("html"), connection=connection,
+              headers=headers)
