@@ -3,6 +3,7 @@ from os.path import basename
 
 from django.template import loader, Context
 from django.core.mail import EmailMultiAlternatives
+from django.utils.encoding import smart_text
 
 from email_extras.settings import USE_GNUPG, GNUPG_HOME, ALWAYS_TRUST
 
@@ -50,7 +51,7 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
     # Encrypts body if recipient has a gpg key installed.
     def encrypt_if_key(body, addr):
         if addr in key_addresses:
-            return unicode(gpg.encrypt(body, addr, always_trust=ALWAYS_TRUST))
+            return smart_text(gpg.encrypt(body, addr, always_trust=ALWAYS_TRUST))
         return body
 
     # Load attachments and create name/data tuples.
