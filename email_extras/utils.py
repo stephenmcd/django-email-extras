@@ -27,14 +27,15 @@ def addresses_for_key(gpg, key):
 
 def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
               attachments=None, body_html=None, connection=None,
-              headers=None):
+              headers=None, disable_encryption=False):
     """
     Sends a multipart email containing text and html versions which
     are encrypted for each recipient that has a valid gpg key
     installed.
     """
 
-    # Allow for a single address to be passed in.
+    # Allow for a single address to be passed in. From this point on we can
+    # assume that `addr_to` is a list/iterable of emails.
     if not hasattr(addr_to, "__iter__"):
         addr_to = [addr_to]
 
@@ -48,13 +49,6 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
         if key_addresses:
             gpg = GPG(gnupghome=GNUPG_HOME)
 
-    # Encrypts body if recipient has a gpg key installed.
-    def encrypt_if_key(body, addr):
-        if addr in key_addresses:
-            encrypted = gpg.encrypt(body, addr, always_trust=ALWAYS_TRUST)
-            return smart_text(encrypted)
-        return body
-
     # Load attachments and create name/data tuples.
     attachments_parts = []
     if attachments is not None:
@@ -66,25 +60,42 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
             else:
                 attachments_parts.append(attachment)
 
-    # Send emails.
-    for addr in addr_to:
-        msg = EmailMultiAlternatives(subject, encrypt_if_key(body_text, addr),
-                                     addr_from, [addr], connection=connection,
+    # Encrypts body if recipient has a gpg key installed.
+    def encrypt_if_key(body, addr_to):
+        # `addr_to` is always a list/iterable of emails. We should only encrypt if
+        # encryption isn't disabled and a *single* address is present.
+        if disable_encryption == False and len(addr_to) == 1:
+            encrypted = gpg.encrypt(body, addr_to[0], always_trust=ALWAYS_TRUST)
+            return smart_text(encrypted)
+        return body
+
+    # Does the actual message building and sending.
+    def send(addr_to):
+        body_text_enc = encrypt_if_key(body_text, addr_to)
+        msg = EmailMultiAlternatives(subject, body_text_enc, addr_from,
+                                     addr_to, connection=connection,
                                      headers=headers)
         if body_html is not None:
-            body_html = encrypt_if_key(body_html, addr)
-            msg.attach_alternative(body_html, "text/html")
+            body_html_enc = encrypt_if_key(body_html, addr_to)
+            msg.attach_alternative(body_html_enc, "text/html")
         for parts in attachments_parts:
             name = parts[0]
-            if key_addresses.get(addr):
+            if key_addresses.get(addr_to):
                 name += ".asc"
-            msg.attach(name, encrypt_if_key(parts[1], addr))
+            msg.attach(name, encrypt_if_key(parts[1], addr_to))
         msg.send(fail_silently=fail_silently)
+
+    # Send email(s).
+    if USE_GNUPG and disable_encryption == False:
+        for addr in addr_to:
+            send([addr])
+    else:
+        send(addr_to)
 
 
 def send_mail_template(subject, template, addr_from, addr_to,
-                       fail_silently=False, attachments=None, context=None,
-                       connection=None, headers=None):
+                       fail_silently=False, attachments=None, connection=None,
+                       context=None, headers=None, disable_encryption=False):
     """
     Send email rendering text and html versions for the specified
     template name using the context dictionary passed in.
@@ -101,4 +112,4 @@ def send_mail_template(subject, template, addr_from, addr_to,
     send_mail(subject, render("txt"), addr_from, addr_to,
               fail_silently=fail_silently, attachments=attachments,
               body_html=render("html"), connection=connection,
-              headers=headers)
+              headers=headers, disable_encryption=False)
