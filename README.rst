@@ -126,6 +126,19 @@ There are two settings you can configure in your project's
     that used keys are always fully trusted.
 
 
+Multiple Recipients
+===================
+
+By default a single email will be sent to multiple recipients unless
+encryption is enabled in which case emails are sent to individual recipients.
+To override this behaviour and send a single email to multiple recipients when
+encryption is enabled pass ``disable_encryption=True`` to ``send_mail`` or
+``send_mail_template``.
+
+Please note, as the parameter name suggests, this will disable encryption
+for this particular email.
+
+
 Local Browser Testing
 =====================
 
