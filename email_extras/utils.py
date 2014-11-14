@@ -35,7 +35,7 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
     """
 
     # Allow for a single address to be passed in.
-    if not hasattr(addr_to, "__iter__"):
+    if isinstance(addr_to, basestring):
         addr_to = [addr_to]
 
     # Obtain a list of the recipients that have gpg keys installed.
@@ -49,9 +49,10 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
             gpg = GPG(gnupghome=GNUPG_HOME)
 
     # Encrypts body if recipient has a gpg key installed.
-    def encrypt_if_key(body, addr):
-        if addr in key_addresses:
-            encrypted = gpg.encrypt(body, addr, always_trust=ALWAYS_TRUST)
+    def encrypt_if_key(body, addr_list):
+        if addr_list[0] in key_addresses:
+            encrypted = gpg.encrypt(body, addr_list[0],
+                                    always_trust=ALWAYS_TRUST)
             return smart_text(encrypted)
         return body
 
@@ -66,19 +67,25 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
             else:
                 attachments_parts.append(attachment)
 
-    # Send emails.
-    for addr in addr_to:
-        msg = EmailMultiAlternatives(subject, encrypt_if_key(body_text, addr),
-                                     addr_from, [addr], connection=connection,
-                                     headers=headers)
+    # Send emails - encrypted emails needs to be sent individually, while
+    # non-encrypted emails can be sent in one send. So the final list of
+    # lists of addresses to send to looks like:
+    # [[unencrypted1, unencrypted2, unencrypted3], [encrypted1], [encrypted2]]
+    unencrypted = [[addr for addr in addr_to if addr not in key_addresses]]
+    encrypted = [[addr] for addr in key_addresses]
+    for addr_list in unencrypted + encrypted:
+        msg = EmailMultiAlternatives(subject,
+                                     encrypt_if_key(body_text, addr_list),
+                                     addr_from, addr_list,
+                                     connection=connection, headers=headers)
         if body_html is not None:
-            body_html = encrypt_if_key(body_html, addr)
-            msg.attach_alternative(body_html, "text/html")
+            msg.attach_alternative(encrypt_if_key(body_html, addr_list),
+                                   "text/html")
         for parts in attachments_parts:
             name = parts[0]
-            if key_addresses.get(addr):
+            if key_addresses.get(addr_list[0]):
                 name += ".asc"
-            msg.attach(name, encrypt_if_key(parts[1], addr))
+            msg.attach(name, encrypt_if_key(parts[1], addr_list))
         msg.send(fail_silently=fail_silently)
 
 
