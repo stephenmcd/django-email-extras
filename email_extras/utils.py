@@ -36,7 +36,7 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
     """
 
     # Allow for a single address to be passed in.
-    if isinstance(addr_to, six.text_type):
+    if isinstance(addr_to, six.string_types):
         addr_to = [addr_to,]
 
     # Obtain a list of the recipients that have gpg keys installed.
