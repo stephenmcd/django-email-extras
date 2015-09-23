@@ -1,6 +1,7 @@
 from __future__ import with_statement
 from os.path import basename
 
+from django.utils import six
 from django.template import loader, Context
 from django.core.mail import EmailMultiAlternatives
 from django.utils.encoding import smart_text
@@ -35,8 +36,8 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
     """
 
     # Allow for a single address to be passed in.
-    if isinstance(addr_to, basestring):
-        addr_to = [addr_to]
+    if isinstance(addr_to, six.string_types):
+        addr_to = [addr_to,]
 
     # Obtain a list of the recipients that have gpg keys installed.
     key_addresses = {}
