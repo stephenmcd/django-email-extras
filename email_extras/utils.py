@@ -72,7 +72,8 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
     # non-encrypted emails can be sent in one send. So the final list of
     # lists of addresses to send to looks like:
     # [[unencrypted1, unencrypted2, unencrypted3], [encrypted1], [encrypted2]]
-    unencrypted = [[addr for addr in addr_to if addr not in key_addresses]]
+    unencrypted = [addr for addr in addr_to if addr not in key_addresses]
+    unencrypted = [unencrypted] if unencrypted else unencrypted
     encrypted = [[addr] for addr in key_addresses]
     for addr_list in unencrypted + encrypted:
         msg = EmailMultiAlternatives(subject,
