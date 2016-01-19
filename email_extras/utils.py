@@ -92,7 +92,8 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
 
 
 def send_mail_template(subject, template, addr_from, addr_to,
-                       fail_silently=False, attachments=None, context=None,
+                       fail_silently=False, attachments=None,
+                       body_html_type="text/html", context=None,
                        connection=None, headers=None):
     """
     Send email rendering text and html versions for the specified
@@ -109,5 +110,6 @@ def send_mail_template(subject, template, addr_from, addr_to,
 
     send_mail(subject, render("txt"), addr_from, addr_to,
               fail_silently=fail_silently, attachments=attachments,
-              body_html=render("html"), connection=connection,
+              body_html=render("html"), body_html_type=body_html_type,
+              connection=connection,
               headers=headers)
