@@ -27,8 +27,8 @@ def addresses_for_key(gpg, key):
 
 
 def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
-              attachments=None, body_html=None, connection=None,
-              headers=None):
+              attachments=None, body_html=None, body_html_type="text/html",
+              connection=None, headers=None):
     """
     Sends a multipart email containing text and html versions which
     are encrypted for each recipient that has a valid gpg key
@@ -82,7 +82,7 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
                                      connection=connection, headers=headers)
         if body_html is not None:
             msg.attach_alternative(encrypt_if_key(body_html, addr_list),
-                                   "text/html")
+                                   body_html_type)
         for parts in attachments_parts:
             name = parts[0]
             if key_addresses.get(addr_list[0]):
