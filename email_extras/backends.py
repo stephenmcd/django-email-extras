@@ -23,7 +23,7 @@ class BrowsableEmailBackend(BaseEmailBackend):
                     self.open(body)
 
     def open(self, body):
-        temp = NamedTemporaryFile(delete=False)
-        temp.write(body)
-        temp.close()
+        with NamedTemporaryFile(delete=False) as temp:
+            temp.write(body.encode('utf-8'))
+
         webbrowser.open("file://" + temp.name)
