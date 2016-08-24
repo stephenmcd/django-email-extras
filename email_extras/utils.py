@@ -6,7 +6,8 @@ from django.core.mail import EmailMultiAlternatives
 from django.utils import six
 from django.utils.encoding import smart_text
 
-from email_extras.settings import USE_GNUPG, GNUPG_HOME, ALWAYS_TRUST
+from email_extras.settings import (USE_GNUPG, GNUPG_HOME, ALWAYS_TRUST,
+                                   GNUPG_ENCODING)
 
 
 if USE_GNUPG:
@@ -47,6 +48,8 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
         # Create the gpg object.
         if key_addresses:
             gpg = GPG(gnupghome=GNUPG_HOME)
+            if GNUPG_ENCODING is not None:
+                gpg.encoding = GNUPG_ENCODING
 
     # Check if recipient has a gpg key installed
     def has_pgp_key(addr):
