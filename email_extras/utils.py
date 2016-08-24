@@ -27,8 +27,7 @@ def addresses_for_key(gpg, key):
 
 
 def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
-              attachments=None, body_html=None, body_html_type="text/html",
-              connection=None, headers=None):
+              attachments=None, body_html=None, connection=None, headers=None):
     """
     Sends a multipart email containing text and html versions which
     are encrypted for each recipient that has a valid gpg key
@@ -49,9 +48,13 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
         if key_addresses:
             gpg = GPG(gnupghome=GNUPG_HOME)
 
+    # Check if recipient has a gpg key installed
+    def has_pgp_key(addr):
+        return addr in key_addresses
+
     # Encrypts body if recipient has a gpg key installed.
     def encrypt_if_key(body, addr_list):
-        if addr_list[0] in key_addresses:
+        if has_pgp_key(addr_list[0]):
             encrypted = gpg.encrypt(body, addr_list[0],
                                     always_trust=ALWAYS_TRUST)
             return smart_text(encrypted)
@@ -81,8 +84,12 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
                                      addr_from, addr_list,
                                      connection=connection, headers=headers)
         if body_html is not None:
+            if has_pgp_key(addr_list[0]):
+                mimetype = "application/gpg-encrypted"
+            else:
+                mimetype = "text/html"
             msg.attach_alternative(encrypt_if_key(body_html, addr_list),
-                                   body_html_type)
+                                   mimetype)
         for parts in attachments_parts:
             name = parts[0]
             if key_addresses.get(addr_list[0]):
@@ -92,8 +99,7 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
 
 
 def send_mail_template(subject, template, addr_from, addr_to,
-                       fail_silently=False, attachments=None,
-                       body_html_type="text/html", context=None,
+                       fail_silently=False, attachments=None, context=None,
                        connection=None, headers=None):
     """
     Send email rendering text and html versions for the specified
@@ -110,6 +116,5 @@ def send_mail_template(subject, template, addr_from, addr_to,
 
     send_mail(subject, render("txt"), addr_from, addr_to,
               fail_silently=fail_silently, attachments=attachments,
-              body_html=render("html"), body_html_type=body_html_type,
-              connection=connection,
+              body_html=render("html"), connection=connection,
               headers=headers)
