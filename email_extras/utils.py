@@ -28,8 +28,7 @@ def addresses_for_key(gpg, key):
 
 
 def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
-              attachments=None, body_html=None, connection=None,
-              headers=None):
+              attachments=None, body_html=None, connection=None, headers=None):
     """
     Sends a multipart email containing text and html versions which
     are encrypted for each recipient that has a valid gpg key
@@ -52,9 +51,13 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
             if GNUPG_ENCODING is not None:
                 gpg.encoding = GNUPG_ENCODING
 
+    # Check if recipient has a gpg key installed
+    def has_pgp_key(addr):
+        return addr in key_addresses
+
     # Encrypts body if recipient has a gpg key installed.
     def encrypt_if_key(body, addr_list):
-        if addr_list[0] in key_addresses:
+        if has_pgp_key(addr_list[0]):
             encrypted = gpg.encrypt(body, addr_list[0],
                                     always_trust=ALWAYS_TRUST)
             return smart_text(encrypted)
@@ -84,8 +87,12 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
                                      addr_from, addr_list,
                                      connection=connection, headers=headers)
         if body_html is not None:
+            if has_pgp_key(addr_list[0]):
+                mimetype = "application/gpg-encrypted"
+            else:
+                mimetype = "text/html"
             msg.attach_alternative(encrypt_if_key(body_html, addr_list),
-                                   "text/html")
+                                   mimetype)
         for parts in attachments_parts:
             name = parts[0]
             if key_addresses.get(addr_list[0]):

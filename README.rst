@@ -122,6 +122,11 @@ There are two settings you can configure in your project's
     ``EMAIL_EXTRAS_GNUPG_HOME`` is specified, otherwise ``False``.
   * ``EMAIL_EXTRAS_GNUPG_HOME`` - String representing a custom location
     for the GNUPG keyring.
+  * ``EMAIL_EXTRAS_GNUPG_ENCODING`` - String representing a gnupg encoding.
+    Defaults to GNUPG ``latin-1`` and could be changed to e.g. ``utf-8``
+    if needed.  Check out
+    `python-gnupg docs <https://pythonhosted.org/python-gnupg/index.html/>`_
+    for more info.
   * ``EMAIL_EXTRAS_ALWAYS_TRUST_KEYS`` - Skip key validation and assume
     that used keys are always fully trusted.
 
