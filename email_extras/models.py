@@ -39,6 +39,7 @@ if USE_GNUPG:
             for key in result.results:
                 addresses.extend(addresses_for_key(gpg, key))
             self.addresses = ",".join(addresses)
+            self.save(update_fields=['addresses'])
             for address in addresses:
                 address, _ = Address.objects.get_or_create(address=address)
                 address.use_asc = self.use_asc
