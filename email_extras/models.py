@@ -32,13 +32,13 @@ if USE_GNUPG:
             return self.addresses
 
         def save(self, *args, **kwargs):
-            super(Key, self).save(*args, **kwargs)
             gpg = GPG(gnupghome=GNUPG_HOME)
             result = gpg.import_keys(self.key)
             addresses = []
             for key in result.results:
                 addresses.extend(addresses_for_key(gpg, key))
             self.addresses = ",".join(addresses)
+            super(Key, self).save(*args, **kwargs)
             for address in addresses:
                 address, _ = Address.objects.get_or_create(address=address)
                 address.use_asc = self.use_asc
