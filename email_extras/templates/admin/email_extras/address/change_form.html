@@ -1,5 +1,6 @@
 {% extends "admin/change_form.html" %}
 
+{% load admin_urls %}
 {% load i18n %}
 
 {% block extrahead %}{{ block.super }}
@@ -11,6 +12,6 @@
 
 {% block after_related_objects %}{{ block.super }}
 <div class="submit-row submit-row-custom">
-	<p class="deletelink-box"><a href="delete/" class="deletelink">{% trans 'Delete Key for Address' %}</a></p>
+	<p class="deletelink-box"><a href="{% url opts|admin_urlname:'delete' original.id %}" class="deletelink">{% trans 'Delete Key for Address' %}</a></p>
 </div>
 {% endblock %}
