@@ -40,8 +40,8 @@ Usage
 =====
 
 Once installed, first add ``email_extras`` to your ``INSTALLED_APPS``
-setting. Then there are two functions for sending email in the
-``email_extras.utils`` module:
+setting and run the migrations. Then there are two functions for sending email
+in the ``email_extras.utils`` module:
 
   * ``send_mail``
   * ``send_mail_template``
