@@ -10,5 +10,9 @@ if USE_GNUPG:
     class KeyAdmin(admin.ModelAdmin):
         form = KeyForm
 
+    class AddressAdmin(admin.ModelAdmin):
+        def has_add_permission(self, request):
+                return False
+
     admin.site.register(Key, KeyAdmin)
-    admin.site.register(Address)
+    admin.site.register(Address, AddressAdmin)
