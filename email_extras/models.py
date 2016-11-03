@@ -55,7 +55,7 @@ if USE_GNUPG:
             verbose_name = _("Address")
             verbose_name_plural = _("Addresses")
 
-        address = models.CharField(max_length=200)
+        address = models.CharField(max_length=200, default='')
         use_asc = models.BooleanField(default=False, editable=False)
 
         def __str__(self):
