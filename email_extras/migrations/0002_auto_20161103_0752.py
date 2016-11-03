@@ -13,8 +13,8 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
-            model_name='address',
-            name='address',
-            field=models.CharField(default='', max_length=200),
+            model_name='key',
+            name='addresses',
+            field=models.TextField(default=''),
         ),
     ]
