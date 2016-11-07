@@ -23,26 +23,34 @@ if USE_GNUPG:
             verbose_name_plural = _("Keys")
 
         key = models.TextField()
-        addresses = models.TextField(editable=False)
+        fingerprint = models.CharField(max_length=200, blank=True, editable=False)
         use_asc = models.BooleanField(default=False, help_text=_("If True, "
             "an '.asc' extension will be added to email attachments sent "
             "to the address for this key."))
 
         def __str__(self):
-            return self.addresses
+            return self.fingerprint
+
+        @property
+        def email_addresses(self):
+            return ",".join(str(address) for address in self.address_set.all())
 
         def save(self, *args, **kwargs):
             gpg = GPG(gnupghome=GNUPG_HOME)
             result = gpg.import_keys(self.key)
+
             addresses = []
             for key in result.results:
                 addresses.extend(addresses_for_key(gpg, key))
-            self.addresses = ",".join(addresses)
+
+            self.fingerprint = result.fingerprints[0]
+
             super(Key, self).save(*args, **kwargs)
             for address in addresses:
-                address, _ = Address.objects.get_or_create(address=address)
+                address, _ = Address.objects.get_or_create(key=self, address=address)
                 address.use_asc = self.use_asc
                 address.save()
+
 
     @python_2_unicode_compatible
     class Address(models.Model):
@@ -55,7 +63,8 @@ if USE_GNUPG:
             verbose_name = _("Address")
             verbose_name_plural = _("Addresses")
 
-        address = models.CharField(max_length=200)
+        address = models.CharField(max_length=200, default='')
+        key = models.ForeignKey('email_extras.Key', null=True, editable=False)
         use_asc = models.BooleanField(default=False, editable=False)
 
         def __str__(self):
@@ -65,7 +74,6 @@ if USE_GNUPG:
             """
             Remove any keys for this address.
             """
-            from email_extras.utils import addresses_for_key
             gpg = GPG(gnupghome=GNUPG_HOME)
             for key in gpg.list_keys():
                 if self.address in addresses_for_key(gpg, key):

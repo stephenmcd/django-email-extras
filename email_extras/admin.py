@@ -9,8 +9,14 @@ if USE_GNUPG:
 
     class KeyAdmin(admin.ModelAdmin):
         form = KeyForm
+        list_display = ('__str__', 'email_addresses')
+        readonly_fields = ('fingerprint', )
+
 
     class AddressAdmin(admin.ModelAdmin):
+        list_display = ('__str__', 'key')
+        readonly_fields = ('key', )
+
         def has_add_permission(self, request):
                 return False
 
