@@ -63,7 +63,7 @@ if USE_GNUPG:
             verbose_name = _("Address")
             verbose_name_plural = _("Addresses")
 
-        address = models.CharField(max_length=200, default='')
+        address = models.EmailField(blank=True)
         key = models.ForeignKey('email_extras.Key', null=True, editable=False)
         use_asc = models.BooleanField(default=False, editable=False)
 
