@@ -129,6 +129,7 @@ There are two settings you can configure in your project's
     for more info.
   * ``EMAIL_EXTRAS_ALWAYS_TRUST_KEYS`` - Skip key validation and assume
     that used keys are always fully trusted.
+  * ``EMAIL_EXTRAS_ACTUAL_DEBUG_BACKEND`` - Dotted import path to the "real" email backend you wish to use during development
 
 
 Local Browser Testing
@@ -146,3 +147,10 @@ With this configured, each time a multipart email is sent, it will
 be written to a temporary file, which is then automatically opened
 in a local web browser. Suffice to say, this should only be enabled
 during development!
+
+In addition to opening HTML mail in your web browser, you can also configure
+the actual backend to use. This is useful if you want to view non-HTML mail
+in your terminal. To use this feature, simply set this option in your
+development ``settings.py`` module::
+
+  EMAIL_EXTRAS_ACTUAL_DEBUG_BACKEND = 'django.core.mail.backends.console.EmailBackend'
