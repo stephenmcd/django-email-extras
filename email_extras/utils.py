@@ -7,7 +7,7 @@ from django.utils import six
 from django.utils.encoding import smart_text
 
 from email_extras.settings import (USE_GNUPG, GNUPG_HOME, ALWAYS_TRUST,
-                                   GNUPG_ENCODING)
+                                   GNUPG_ENCODING, FAILED_ENCRYPTION_BODY)
 
 
 if USE_GNUPG:
@@ -25,6 +25,13 @@ def addresses_for_key(gpg, key):
             addresses.extend([address.split("<")[-1].strip(">")
                               for address in key["uids"] if address])
     return addresses
+
+
+def get_failed_encryption_body(body, addr):
+    """
+    Meant to be monkey patched if required.
+    """
+    return FAILED_ENCRYPTION_BODY
 
 
 def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
@@ -60,6 +67,8 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
         if has_pgp_key(addr_list[0]):
             encrypted = gpg.encrypt(body, addr_list[0],
                                     always_trust=ALWAYS_TRUST)
+            if encrypted == "" and body != "":  # encryption failed
+                return get_failed_encryption_body(body, addr_list[0])
             return smart_text(encrypted)
         return body
 
