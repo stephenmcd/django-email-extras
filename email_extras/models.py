@@ -24,9 +24,9 @@ if USE_GNUPG:
 
         key = models.TextField()
         fingerprint = models.CharField(max_length=200, blank=True, editable=False)
-        use_asc = models.BooleanField(default=False, help_text=_("If True, "
-            "an '.asc' extension will be added to email attachments sent "
-            "to the address for this key."))
+        use_asc = models.BooleanField(default=False, help_text=_(
+            "If True, an '.asc' extension will be added to email attachments "
+            "sent to the address for this key."))
 
         def __str__(self):
             return self.fingerprint
@@ -50,7 +50,6 @@ if USE_GNUPG:
                 address, _ = Address.objects.get_or_create(key=self, address=address)
                 address.use_asc = self.use_asc
                 address.save()
-
 
     @python_2_unicode_compatible
     class Address(models.Model):

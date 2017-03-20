@@ -3,7 +3,6 @@ from tempfile import NamedTemporaryFile
 import webbrowser
 
 from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
 from django.core.mail.backends.base import BaseEmailBackend
 
 

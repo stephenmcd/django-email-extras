@@ -10,6 +10,6 @@ GNUPG_ENCODING = getattr(settings, "EMAIL_EXTRAS_GNUPG_ENCODING", None)
 
 if USE_GNUPG:
     try:
-        import gnupg
+        import gnupg  # noqa: F401
     except ImportError:
         raise ImproperlyConfigured("Could not import gnupg")
