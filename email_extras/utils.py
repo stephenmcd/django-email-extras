@@ -1,8 +1,9 @@
 from __future__ import with_statement
 from os.path import basename
+from warnings import warn
 
 from django.template import loader, Context
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, get_connection
 from django.utils import six
 from django.utils.encoding import smart_text
 
@@ -27,24 +28,41 @@ def addresses_for_key(gpg, key):
     return addresses
 
 
-def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
-              attachments=None, body_html=None, connection=None, headers=None):
+def send_mail(subject, body_text, addr_from, recipient_list,
+              fail_silently=False, auth_user=None, auth_password=None,
+              attachments=None, body_html=None, html_message=None,
+              connection=None, headers=None):
     """
     Sends a multipart email containing text and html versions which
     are encrypted for each recipient that has a valid gpg key
     installed.
     """
 
+    # Make sure only one HTML option is specified
+    if body_html is not None and html_message is not None:  # pragma: no cover
+        raise ValueError("You cannot specify body_html and html_message at "
+                         "the same time. Please only use html_message.")
+
+    # Push users to update their code
+    if body_html is not None:  # pragma: no cover
+        warn("Using body_html is deprecated; use the html_message argument "
+             "instead. Please update your code.", DeprecationWarning)
+        html_message = body_html
+
     # Allow for a single address to be passed in.
-    if isinstance(addr_to, six.string_types):
-        addr_to = [addr_to]
+    if isinstance(recipient_list, six.string_types):
+        recipient_list = [recipient_list]
+
+    connection = connection or get_connection(
+        username=auth_user, password=auth_password,
+        fail_silently=fail_silently)
 
     # Obtain a list of the recipients that have gpg keys installed.
     key_addresses = {}
     if USE_GNUPG:
         from email_extras.models import Address
-        for address in Address.objects.filter(address__in=addr_to):
-            key_addresses[address.address] = address.use_asc
+        key_addresses = dict(Address.objects.filter(address__in=recipient_list)
+                                            .values_list('address', 'use_asc'))
         # Create the gpg object.
         if key_addresses:
             gpg = GPG(gnupghome=GNUPG_HOME)
@@ -78,7 +96,8 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
     # non-encrypted emails can be sent in one send. So the final list of
     # lists of addresses to send to looks like:
     # [[unencrypted1, unencrypted2, unencrypted3], [encrypted1], [encrypted2]]
-    unencrypted = [addr for addr in addr_to if addr not in key_addresses]
+    unencrypted = [addr for addr in recipient_list
+                   if addr not in key_addresses]
     unencrypted = [unencrypted] if unencrypted else unencrypted
     encrypted = [[addr] for addr in key_addresses]
     for addr_list in unencrypted + encrypted:
@@ -86,12 +105,12 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
                                      encrypt_if_key(body_text, addr_list),
                                      addr_from, addr_list,
                                      connection=connection, headers=headers)
-        if body_html is not None:
+        if html_message is not None:
             if has_pgp_key(addr_list[0]):
                 mimetype = "application/gpg-encrypted"
             else:
                 mimetype = "text/html"
-            msg.attach_alternative(encrypt_if_key(body_html, addr_list),
+            msg.attach_alternative(encrypt_if_key(html_message, addr_list),
                                    mimetype)
         for parts in attachments_parts:
             name = parts[0]
@@ -101,7 +120,7 @@ def send_mail(subject, body_text, addr_from, addr_to, fail_silently=False,
         msg.send(fail_silently=fail_silently)
 
 
-def send_mail_template(subject, template, addr_from, addr_to,
+def send_mail_template(subject, template, addr_from, recipient_list,
                        fail_silently=False, attachments=None, context=None,
                        connection=None, headers=None):
     """
@@ -117,7 +136,7 @@ def send_mail_template(subject, template, addr_from, addr_to,
         name = "email_extras/%s.%s" % (template, ext)
         return loader.get_template(name).render(Context(context))
 
-    send_mail(subject, render("txt"), addr_from, addr_to,
+    send_mail(subject, render("txt"), addr_from, recipient_list,
               fail_silently=fail_silently, attachments=attachments,
-              body_html=render("html"), connection=connection,
+              html_message=render("html"), connection=connection,
               headers=headers)
