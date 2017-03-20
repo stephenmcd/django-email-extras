@@ -15,6 +15,10 @@ if USE_GNUPG:
     from gnupg import GPG
 
 
+class EncryptionFailedError(Exception):
+    pass
+
+
 def addresses_for_key(gpg, key):
     """
     Takes a key and extracts the email addresses for it.
@@ -76,8 +80,11 @@ def send_mail(subject, body_text, addr_from, recipient_list,
     # Encrypts body if recipient has a gpg key installed.
     def encrypt_if_key(body, addr_list):
         if has_pgp_key(addr_list[0]):
-            encrypted = gpg.encrypt(body, addr_list[0],
-                                    always_trust=ALWAYS_TRUST)
+            encrypt_result = gpg.encrypt(body, addr_list[0],
+                                         always_trust=ALWAYS_TRUST)
+            if encrypted == "" and body != "":  # encryption failed
+                raise EncryptionFailedError("Encrypting mail to %s failed.",
+                                            addr_list[0])
             return smart_text(encrypted)
         return body
 
