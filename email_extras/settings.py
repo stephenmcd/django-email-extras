@@ -8,6 +8,12 @@ USE_GNUPG = getattr(settings, "EMAIL_EXTRAS_USE_GNUPG", GNUPG_HOME is not None)
 ALWAYS_TRUST = getattr(settings, "EMAIL_EXTRAS_ALWAYS_TRUST_KEYS", False)
 GNUPG_ENCODING = getattr(settings, "EMAIL_EXTRAS_GNUPG_ENCODING", None)
 
+# Used internally
+encrypt_kwargs = {
+    'always_trust': ALWAYS_TRUST,
+}
+
+
 if USE_GNUPG:
     try:
         import gnupg  # noqa: F401

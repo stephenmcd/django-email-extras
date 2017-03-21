@@ -7,12 +7,17 @@ from django.core.mail import EmailMultiAlternatives, get_connection
 from django.utils import six
 from django.utils.encoding import smart_text
 
-from email_extras.settings import (USE_GNUPG, GNUPG_HOME, ALWAYS_TRUST,
-                                   GNUPG_ENCODING)
+from email_extras.settings import (ALWAYS_TRUST, GNUPG_ENCODING, GNUPG_HOME,
+                                   USE_GNUPG)
 
 
 if USE_GNUPG:
     from gnupg import GPG
+
+# Used internally
+encrypt_kwargs = {
+    'always_trust': ALWAYS_TRUST,
+}
 
 
 class EncryptionFailedError(Exception):
@@ -80,8 +85,7 @@ def send_mail(subject, body_text, addr_from, recipient_list,
     # Encrypts body if recipient has a gpg key installed.
     def encrypt_if_key(body, addr_list):
         if has_pgp_key(addr_list[0]):
-            encrypted = gpg.encrypt(body, addr_list[0],
-                                    always_trust=ALWAYS_TRUST)
+            encrypted = gpg.encrypt(body, addr_list[0], **encrypt_kwargs)
             if encrypted == "" and body != "":  # encryption failed
                 raise EncryptionFailedError("Encrypting mail to %s failed.",
                                             addr_list[0])
