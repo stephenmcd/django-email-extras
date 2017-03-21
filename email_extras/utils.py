@@ -16,7 +16,11 @@ if USE_GNUPG:
 
 
 class EncryptionFailedError(Exception):
-    pass
+    def __init__(self, addr, body):
+        self.body = body
+        self.addr = addr
+        super(EncryptionFailedError, self).__init__(
+            "Encrypting mail to %s failed.", addr)
 
 
 def addresses_for_key(gpg, key):
@@ -82,10 +86,10 @@ def send_mail(subject, body_text, addr_from, recipient_list,
         if has_pgp_key(addr_list[0]):
             encrypt_result = gpg.encrypt(body, addr_list[0],
                                          always_trust=ALWAYS_TRUST)
-            if encrypted == "" and body != "":  # encryption failed
-                raise EncryptionFailedError("Encrypting mail to %s failed.",
-                                            addr_list[0])
-            return smart_text(encrypted)
+            if str(encrypt_result) == "" and body != "":  # encryption failed
+                raise EncryptionFailedError(addr_list[0], body)
+
+            return smart_text(encrypt_result)
         return body
 
     # Load attachments and create name/data tuples.
