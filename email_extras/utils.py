@@ -80,8 +80,8 @@ def send_mail(subject, body_text, addr_from, recipient_list,
     # Encrypts body if recipient has a gpg key installed.
     def encrypt_if_key(body, addr_list):
         if has_pgp_key(addr_list[0]):
-            encrypt_result = gpg.encrypt(body, addr_list[0],
-                                         always_trust=ALWAYS_TRUST)
+            encrypted = gpg.encrypt(body, addr_list[0],
+                                    always_trust=ALWAYS_TRUST)
             if encrypted == "" and body != "":  # encryption failed
                 raise EncryptionFailedError("Encrypting mail to %s failed.",
                                             addr_list[0])
