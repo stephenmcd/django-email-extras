@@ -1,4 +1,3 @@
-
 from email_extras.settings import USE_GNUPG
 
 
