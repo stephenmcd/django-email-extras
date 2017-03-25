@@ -17,12 +17,8 @@ SIGNING_KEY_DATA = {
     'expire_date': '2y',
 }
 SIGNING_KEY_DATA.update(getattr(settings, "EMAIL_EXTRAS_SIGNING_KEY_DATA", {}))
-
-# Used internally
-encrypt_kwargs = {
-    'always_trust': ALWAYS_TRUST,
-}
-
+SIGNING_KEY_FINGERPRINT = getattr(
+    settings, "EMAIL_EXTRAS_SIGNING_KEY_FINGERPRINT", None)
 
 if USE_GNUPG:
     try:

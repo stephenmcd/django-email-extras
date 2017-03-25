@@ -17,6 +17,7 @@ if USE_GNUPG:
 # Used internally
 encrypt_kwargs = {
     'always_trust': ALWAYS_TRUST,
+    'sign': SIGNING_KEY_FINGERPRINT,
 }
 
 
