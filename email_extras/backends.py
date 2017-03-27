@@ -13,6 +13,9 @@ from django.core.mail.backends.smtp import EmailBackend as SmtpBackend
 from django.core.mail.message import EmailMultiAlternatives
 from django.utils.encoding import smart_text
 
+from .handlers import (handle_failed_message_encryption,
+                       handle_failed_alternative_encryption,
+                       handle_failed_attachment_encryption)
 from .settings import (GNUPG_HOME, GNUPG_ENCODING, USE_GNUPG)
 from .utils import (EncryptionFailedError, encrypt_kwargs)
 
@@ -37,14 +40,6 @@ class BrowsableEmailBackend(BaseEmailBackend):
             temp.write(body.encode('utf-8'))
 
         webbrowser.open("file://" + temp.name)
-
-
-class AttachmentEncryptionFailedError(EncryptionFailedError):
-    pass
-
-
-class AlternativeEncryptionFailedError(EncryptionFailedError):
-    pass
 
 
 if USE_GNUPG:
@@ -102,12 +97,22 @@ if USE_GNUPG:
         try:
             encrypted_content = encrypt(content, address)
         except EncryptionFailedError as e:
-            # SECURITY: We could include a piece of the content here, but that
-            # would leak information in logs and to the admins. So instead, we
-            # only try to include the filename.
-            raise AttachmentEncryptionFailedError(
-                "Encrypting attachment to %s failed: %s (%s)", address,
-                filename, e.msg)
+            # This function will need to decide what to do. Possibilities include
+            # one or more of:
+            #
+            # * Mail admins (possibly without encrypting the message to them)
+            # * Remove the offending key automatically
+            # * Set the body to a blank string
+            # * Set the body to the cleartext
+            # * Set the body to the cleartext, with a warning message prepended
+            # * Set the body to a custom error string
+            # * Reraise the exception
+            #
+            # However, the behavior will be very site-specific, because each site
+            # will have different attackers, different threat profiles, different
+            # compliance requirements, and different policies.
+            #
+            handle_failed_attachment_encryption(e)
         else:
             if use_asc and filename is not None:
                 filename += ".asc"
@@ -145,7 +150,10 @@ if USE_GNUPG:
                     continue
 
                 # Replace the message body with the encrypted message body
-                new_msg.body = encrypt(new_msg.body, address)
+                try:
+                    new_msg.body = encrypt(new_msg.body, address)
+                except EncryptionFailedError as e:
+                    handle_failed_message_encryption(e)
 
                 # If the message has alternatives, encrypt them all
                 alternatives = []
@@ -158,9 +166,7 @@ if USE_GNUPG:
                     try:
                         encrypted_alternative = encrypt(alt, address)
                     except EncryptionFailedError as e:
-                        raise AlternativeEncryptionFailedError(
-                            "Encrypting alternative to %s failed: %s (%s)",
-                            address, alt, e.msg)
+                        handle_failed_alternative_encryption(e)
                     else:
                         alternatives.append((encrypted_alternative,
                                              "application/gpg-encrypted"))
