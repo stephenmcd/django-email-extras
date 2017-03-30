@@ -1,9 +1,9 @@
 from __future__ import with_statement
 
 from os.path import basename
-from six import string_types
 from warnings import warn
 
+from django import VERSION
 from django.template import loader, Context
 from django.core.mail import EmailMultiAlternatives, get_connection
 from django.utils import six
@@ -15,6 +15,7 @@ from email_extras.settings import (ALWAYS_TRUST, GNUPG_ENCODING, GNUPG_HOME,
 # Contexts are just vanilla Python dictionaries in Django 1.9+
 if VERSION >= (1, 9):
     Context = dict  # noqa: F811
+
 
 if USE_GNUPG:
     from gnupg import GPG

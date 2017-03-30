@@ -13,11 +13,11 @@ from tests.utils import KeyMixin
 class GetVariableFromExceptionTestCase(TestCase):
     def test_get_variable_from_parent(self):
         def child():
-            child_var = 2
+            child_var = 2  # noqa: F841
             raise Exception()
 
         def parent():
-            parent_var = 1
+            parent_var = 1  # noqa: F841
 
             child()
 
@@ -30,11 +30,11 @@ class GetVariableFromExceptionTestCase(TestCase):
 
     def test_get_variable_from_child(self):
         def child():
-            child_var = 2
+            child_var = 2  # noqa: F841
             raise Exception()
 
         def parent():
-            parent_var = 1
+            parent_var = 1  # noqa: F841
 
             child()
 
@@ -47,11 +47,11 @@ class GetVariableFromExceptionTestCase(TestCase):
 
     def test_raise_key_error(self):
         def child():
-            child_var = 2
+            child_var = 2  # noqa: F841
             raise Exception()
 
         def parent():
-            parent_var = 1
+            parent_var = 1  # noqa: F841
 
             child()
 

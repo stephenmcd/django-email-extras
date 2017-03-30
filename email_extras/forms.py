@@ -3,7 +3,6 @@ from django import forms
 from django.utils.translation import ugettext_lazy as _
 
 from email_extras.models import Key
-from email_extras.settings import USE_GNUPG, GNUPG_HOME
 from email_extras.utils import get_gpg
 
 

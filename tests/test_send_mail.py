@@ -1,8 +1,7 @@
 from django.conf import settings
 from django.core import mail
-from django.template import loader, Context
+from django.template import loader
 from django.test import TestCase, override_settings
-
 
 from email_extras.utils import send_mail_template
 
@@ -60,13 +59,13 @@ class SendMailTemplateTestCase(TestCase):
         self.assertEquals(
             message.body,
             loader.get_template("email_extras/%s.%s" % (template, 'txt'))
-            .render(Context(context)))
+            .render(context))
 
         self.assertEquals(message.alternatives[0][1], 'text/html')
         self.assertEquals(
             message.alternatives[0][0],
             loader.get_template("email_extras/%s.%s" % (template, 'html'))
-            .render(Context(context)))
+            .render(context))
 
     def test_without_context(self):
         subject = "Dr. Suess Says"
@@ -82,10 +81,10 @@ class SendMailTemplateTestCase(TestCase):
         self.assertEquals(
             message.body,
             loader.get_template("email_extras/%s.%s" % (template, 'txt'))
-            .render(Context({})))
+            .render({}))
 
         self.assertEquals(message.alternatives[0][1], 'text/html')
         self.assertEquals(
             message.alternatives[0][0],
             loader.get_template("email_extras/%s.%s" % (template, 'html'))
-            .render(Context({})))
+            .render({}))

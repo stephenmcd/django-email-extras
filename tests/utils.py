@@ -318,7 +318,7 @@ class SendMailMixin(KeyMixin, SendMailFunctionMixin):
 
         self.assertEquals(str(delete_result), 'ok')
 
-    def test_send_mail_function_txt_message_with_unencrypted_recipients_with_attachment_from_filename(self):
+    def test_send_mail_function_txt_message_with_unencrypted_recipients_with_attachment_from_filename(self):  # noqa: E501
         self.maxDiff = 10000
         msg_subject = "Test Subject"
         to = ['django-email-extras@example.com', 'unencrypted@example.com']

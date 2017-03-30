@@ -92,6 +92,7 @@ def import_function(key):
     mod = import_module(mod)
     return getattr(mod, function)
 
+
 exception_handlers = {
     'message': 'handle_failed_message_encryption',
     'alternative': 'handle_failed_alternative_encryption',

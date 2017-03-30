@@ -93,8 +93,8 @@ if USE_GNUPG:
         try:
             encrypted_content = encrypt(content, address)
         except EncryptionFailedError as e:
-            # This function will need to decide what to do. Possibilities include
-            # one or more of:
+            # This function will need to decide what to do. Possibilities
+            # include one or more of:
             #
             # * Mail admins (possibly without encrypting the message to them)
             # * Remove the offending key automatically
@@ -104,9 +104,9 @@ if USE_GNUPG:
             # * Set the body to a custom error string
             # * Reraise the exception
             #
-            # However, the behavior will be very site-specific, because each site
-            # will have different attackers, different threat profiles, different
-            # compliance requirements, and different policies.
+            # However, the behavior will be very site-specific, because each
+            # site will have different attackers, different threat profiles,
+            # different compliance requirements, and different policies.
             #
             handle_failed_attachment_encryption(e)
         else:
