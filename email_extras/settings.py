@@ -28,5 +28,5 @@ SIGNING_KEY_FINGERPRINT = getattr(
 if USE_GNUPG:
     try:
         import gnupg  # noqa: F401
-    except ImportError:
+    except ImportError:  # pragma: no cover
         raise ImproperlyConfigured("Could not import gnupg")

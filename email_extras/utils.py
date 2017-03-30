@@ -9,8 +9,6 @@ from django.core.mail import EmailMultiAlternatives, get_connection
 from django.utils import six
 from django.utils.encoding import smart_text
 
-from gnupg import GPG
-
 from email_extras.settings import (ALWAYS_TRUST, GNUPG_ENCODING, GNUPG_HOME,
                                    USE_GNUPG, SIGNING_KEY_FINGERPRINT)
 
@@ -47,7 +45,7 @@ def check_signing_key():
         gpg = get_gpg()
         try:
             gpg.list_keys(True).key_map[SIGNING_KEY_FINGERPRINT]
-        except KeyError as e:
+        except KeyError:
             raise BadSigningKeyError(
                 "The key specified by the "
                 "EMAIL_EXTRAS_SIGNING_KEY_FINGERPRINT setting "
