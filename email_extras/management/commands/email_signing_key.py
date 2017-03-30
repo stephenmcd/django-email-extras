@@ -4,9 +4,8 @@ Script to generate and upload a signing key to keyservers
 from __future__ import print_function
 
 import argparse
-import sys
 
-from django.core.management.base import LabelCommand
+from django.core.management.base import LabelCommand, CommandError
 from django.utils.translation import ugettext as _
 
 from email_extras.models import Key
@@ -15,6 +14,11 @@ from email_extras.utils import get_gpg
 
 
 gpg = get_gpg()
+
+
+# This is split out so we can mock it for tests
+def upload_keys(keyservers, fingerprint):
+    gpg.send_keys(keyservers, fingerprint)  # pragma: nocover
 
 
 # Create an action that *extends* a list, instead of *appending* to it
@@ -39,6 +43,7 @@ class Command(LabelCommand):
             '--generate',
             action='store_true',
             default=False,
+            dest='generate',
             help=_("Generate a new signing key"))
         parser.add_argument(
             '--print-private-key',
@@ -52,17 +57,19 @@ class Command(LabelCommand):
             # to be interpreted as [server1, server2, server3, server4], so we
             # need to use the custom ExtendAction we defiend before
             action='extend',
-            nargs='+',
+            default=[],
             dest='keyservers',
             help=_("Upload (the most recently generated) public signing key "
-                   "to the specified keyservers"))
+                   "to the specified keyservers"),
+            nargs='+')
 
     def handle(self, *labels, **options):
+        output = ''
+
         # EITHER specify the key fingerprints OR generate a key
         if options.get('generate') and labels:
-            print("You cannot specify fingerprints and --generate when "
-                  "running this command")
-            sys.exit(-1)
+            raise CommandError("You cannot specify fingerprints and "
+                               "--generate when running this command")
 
         if options.get('generate'):
             signing_key_cmd = gpg.gen_key_input(**SIGNING_KEY_DATA)
@@ -75,19 +82,21 @@ class Command(LabelCommand):
                                           use_asc=False)
             labels = [self.key.fingerprint]
 
-        return super(Command, self).handle(*labels, **options)
+            output += "{fp}\n".format(fp=self.key.fingerprint)
+
+        output += super(Command, self).handle(*labels, **options)
+
+        return output
 
     def handle_label(self, label, **options):
         try:
             self.key = Key.objects.get(fingerprint=label)
         except Key.DoesNotExist:
-            print("Key matching fingerprint '%(fp)s' not found." % {
-                'fp': label,
-            })
-            sys.exit(-1)
+            raise CommandError("Key matching fingerprint '%(fp)s' not found." %
+                               {'fp': label})
 
         for ks in set(options.get('keyservers')):
-            gpg.send_keys(ks, self.key.fingerprint)
+            upload_keys(ks, self.key.fingerprint)
 
         output = ''
 
@@ -96,8 +105,8 @@ class Command(LabelCommand):
 
         # If we havne't been told to do anything else, print out the public
         # signing key
-        if not options.get('keyservers') and \
-           not options.get('print_private_key'):
+        if options.get('generate') or (not options.get('keyservers') and
+                                       not options.get('print_private_key')):
             output += gpg.export_keys([self.key.fingerprint])
 
         return output

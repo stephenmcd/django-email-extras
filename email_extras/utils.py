@@ -1,6 +1,7 @@
 from __future__ import with_statement
 
 from os.path import basename
+from six import string_types
 from warnings import warn
 
 from django.template import loader, Context
@@ -13,6 +14,9 @@ from gnupg import GPG
 from email_extras.settings import (ALWAYS_TRUST, GNUPG_ENCODING, GNUPG_HOME,
                                    USE_GNUPG, SIGNING_KEY_FINGERPRINT)
 
+# Contexts are just vanilla Python dictionaries in Django 1.9+
+if VERSION >= (1, 9):
+    Context = dict  # noqa: F811
 
 if USE_GNUPG:
     from gnupg import GPG
@@ -60,13 +64,9 @@ def addresses_for_key(gpg, key):
     """
     Takes a key and extracts the email addresses for it.
     """
-    fingerprint = key["fingerprint"]
-    addresses = []
-    for key in gpg.list_keys():
-        if key["fingerprint"] == fingerprint:
-            addresses.extend([address.split("<")[-1].strip(">")
-                              for address in key["uids"] if address])
-    return addresses
+    return [address.split("<")[-1].strip(">")
+            for address in gpg.list_keys().key_map[key['fingerprint']]["uids"]
+            if address]
 
 
 def send_mail(subject, body_text, addr_from, recipient_list,
@@ -116,9 +116,10 @@ def send_mail(subject, body_text, addr_from, recipient_list,
     def encrypt_if_key(body, addr_list):
         if has_pgp_key(addr_list[0]):
             encrypted = gpg.encrypt(body, addr_list[0], **encrypt_kwargs)
-            if encrypted == "" and body != "":  # encryption failed
-                raise EncryptionFailedError("Encrypting mail to %s failed.",
-                                            addr_list[0])
+            if not encrypted.ok or str(encrypted) == "" and body != "":
+                # encryption failed
+                raise EncryptionFailedError("Encrypting mail to %s failed: %s",
+                                            addr_list[0], encrypted.stderr)
             return smart_text(encrypted)
         return body
 
@@ -127,7 +128,7 @@ def send_mail(subject, body_text, addr_from, recipient_list,
     if attachments is not None:
         for attachment in attachments:
             # Attachments can be pairs of name/data, or filesystem paths.
-            if not hasattr(attachment, "__iter__"):
+            if isinstance(attachment, six.string_types):
                 with open(attachment, "rb") as f:
                     attachments_parts.append((basename(attachment), f.read()))
             else:
@@ -153,11 +154,27 @@ def send_mail(subject, body_text, addr_from, recipient_list,
                 mimetype = "text/html"
             msg.attach_alternative(encrypt_if_key(html_message, addr_list),
                                    mimetype)
+
         for parts in attachments_parts:
             name = parts[0]
-            if key_addresses.get(addr_list[0]):
-                name += ".asc"
-            msg.attach(name, encrypt_if_key(parts[1], addr_list))
+
+            # Don't encrypt attachments twice
+            if len(parts) > 2 and parts[2] == "application/gpg-encrypted":
+                msg.attach(name, parts[1], parts[2])
+                continue
+
+            if has_pgp_key(addr_list[0]):
+                # Name might be none if content was simply directly attached
+                if key_addresses.get(addr_list[0]) and name is not None:
+                    name += ".asc"
+                mimetype = "application/gpg-encrypted"
+            else:
+                # If we aren't encrypting the message, then leave the mimetype
+                # alone
+                mimetype = parts[2] if len(parts) > 2 else None
+
+            msg.attach(name, encrypt_if_key(parts[1], addr_list), mimetype)
+
         msg.send(fail_silently=fail_silently)
 
 

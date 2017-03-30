@@ -1,4 +1,5 @@
-import inspect
+from importlib import import_module
+from inspect import trace
 
 from django.conf import settings
 from django.core.mail import mail_admins
@@ -14,7 +15,7 @@ def get_variable_from_exception(exception, variable_name):
     """
     Grab the variable from closest frame in the stack
     """
-    for frame in reversed(inspect.trace()):
+    for frame in reversed(trace()):
         try:
             # From http://stackoverflow.com/a/9059407/6461688
             frame_variable = frame[0].f_locals[variable_name]
@@ -88,15 +89,7 @@ def force_send_message(unencrypted_message):
 
 def import_function(key):
     mod, _, function = FAILURE_HANDLERS[key].rpartition('.')
-    try:
-        # Python 3.4+
-        from importlib import import_module
-    except ImportError:
-        # Python < 3.4
-        # From http://stackoverflow.com/a/8255024/6461688
-        mod = __import__(mod, globals(), locals(), [function])
-    else:
-        mod = import_module(mod)
+    mod = import_module(mod)
     return getattr(mod, function)
 
 exception_handlers = {

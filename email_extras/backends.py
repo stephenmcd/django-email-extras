@@ -12,6 +12,7 @@ from django.core.mail.backends.filebased import EmailBackend as FileBackend
 from django.core.mail.backends.smtp import EmailBackend as SmtpBackend
 from django.core.mail.message import EmailMultiAlternatives
 from django.utils.encoding import smart_text
+from django.utils import six
 
 from .handlers import (handle_failed_message_encryption,
                        handle_failed_alternative_encryption,
@@ -57,24 +58,23 @@ if USE_GNUPG:
             from_email=msg.from_email,
             subject=msg.subject,
             body=msg.body,
+            alternatives=getattr(msg, 'alternatives', []),
             attachments=msg.attachments,
             headers=msg.extra_headers,
             connection=msg.connection)
 
     def encrypt(text, addr):
         encryption_result = gpg.encrypt(text, addr, **encrypt_kwargs)
-        if not encryption_result.ok:
+        if not encryption_result.ok or (smart_text(encryption_result) == ""
+                                        and text != ""):
             raise EncryptionFailedError("Encrypting mail to %s failed: '%s'",
                                         addr, encryption_result.status)
-        if smart_text(encryption_result) == "" and text != "":
-            raise EncryptionFailedError("Encrypting mail to %s failed.",
-                                        addr)
         return smart_text(encryption_result)
 
     def encrypt_attachment(address, attachment, use_asc):
         # Attachments can either just be filenames or a
         # (filename, content, mimetype) triple
-        if not hasattr(attachment, "__iter__"):
+        if isinstance(attachment, six.string_types):
             filename = basename(attachment)
             mimetype = None
 
@@ -137,6 +137,7 @@ if USE_GNUPG:
 
             # Make a new message object for each recipient with a key
             new_msg = copy_message(msg)
+            new_msg.to = list(key_addrs.keys())
 
             # Encrypt the message body and all attachments for all addresses
             # we have keys for
