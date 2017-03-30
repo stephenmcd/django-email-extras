@@ -1,3 +1,9 @@
 *.pyc
 *.pyo
 *.egg-info
+.coverage
+tests/mail.txt
+
+gpg_keyring/
+htmlcov/
+tests/fixtures/
