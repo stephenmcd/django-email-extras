@@ -1,3 +1,10 @@
+.. image:: https://travis-ci.org/stephenmcd/django-email-extras.svg?branch=master
+    :target: https://travis-ci.org/stephenmcd/django-email-extras
+
+.. image:: https://coveralls.io/repos/github/stephenmcd/django-email-extras/badge.svg
+    :target: https://coveralls.io/github/stephenmcd/django-email-extras
+
+
 Created by `Stephen McDonald <http://twitter.com/stephen_mcd>`_
 
 Introduction
