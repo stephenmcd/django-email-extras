@@ -1,4 +1,5 @@
 from __future__ import with_statement
+
 from os.path import basename
 from warnings import warn
 
@@ -7,8 +8,10 @@ from django.core.mail import EmailMultiAlternatives, get_connection
 from django.utils import six
 from django.utils.encoding import smart_text
 
+from gnupg import GPG
+
 from email_extras.settings import (ALWAYS_TRUST, GNUPG_ENCODING, GNUPG_HOME,
-                                   USE_GNUPG)
+                                   USE_GNUPG, SIGNING_KEY_FINGERPRINT)
 
 
 if USE_GNUPG:
@@ -29,6 +32,28 @@ encrypt_kwargs = {
 
 class EncryptionFailedError(Exception):
     pass
+
+
+class BadSigningKeyError(KeyError):
+    pass
+
+
+def check_signing_key():
+    if USE_GNUPG and SIGNING_KEY_FINGERPRINT is not None:
+        gpg = get_gpg()
+        try:
+            gpg.list_keys(True).key_map[SIGNING_KEY_FINGERPRINT]
+        except KeyError as e:
+            raise BadSigningKeyError(
+                "The key specified by the "
+                "EMAIL_EXTRAS_SIGNING_KEY_FINGERPRINT setting "
+                "({fp}) does not exist in the GPG keyring. Adjust the "
+                "EMAIL_EXTRAS_GNUPG_HOME setting (currently set to "
+                "{gnupg_home}, correct the key fingerprint, or generate a new "
+                "key by running python manage.py email_signing_key --generate "
+                "to fix.".format(
+                    fp=SIGNING_KEY_FINGERPRINT,
+                    gnupg_home=GNUPG_HOME))
 
 
 def addresses_for_key(gpg, key):
