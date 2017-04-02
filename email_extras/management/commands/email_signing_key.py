@@ -6,16 +6,15 @@ from __future__ import print_function
 import argparse
 import sys
 
-from gnupg import GPG
-
 from django.core.management.base import LabelCommand
 from django.utils.translation import ugettext as _
 
 from email_extras.models import Key
-from email_extras.settings import (GNUPG_HOME, SIGNING_KEY_DATA)
+from email_extras.settings import SIGNING_KEY_DATA
+from email_extras.utils import get_gpg
 
 
-gpg = GPG(gnupghome=GNUPG_HOME)
+gpg = get_gpg()
 
 
 # Create an action that *extends* a list, instead of *appending* to it

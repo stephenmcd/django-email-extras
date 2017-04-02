@@ -16,8 +16,8 @@ from django.utils.encoding import smart_text
 from .handlers import (handle_failed_message_encryption,
                        handle_failed_alternative_encryption,
                        handle_failed_attachment_encryption)
-from .settings import (GNUPG_HOME, GNUPG_ENCODING, USE_GNUPG)
-from .utils import (EncryptionFailedError, encrypt_kwargs)
+from .settings import USE_GNUPG
+from .utils import (EncryptionFailedError, encrypt_kwargs, get_gpg)
 
 
 class BrowsableEmailBackend(BaseEmailBackend):
@@ -43,14 +43,10 @@ class BrowsableEmailBackend(BaseEmailBackend):
 
 
 if USE_GNUPG:
-    from gnupg import GPG
-
     from .models import Address
 
     # Create the GPG object
-    gpg = GPG(gnupghome=GNUPG_HOME)
-    if GNUPG_ENCODING is not None:
-        gpg.encoding = GNUPG_ENCODING
+    gpg = get_gpg()
 
     def copy_message(msg):
         return EmailMultiAlternatives(

@@ -14,6 +14,12 @@ from email_extras.settings import (ALWAYS_TRUST, GNUPG_ENCODING, GNUPG_HOME,
 if USE_GNUPG:
     from gnupg import GPG
 
+    def get_gpg():
+        gpg = GPG(gnupghome=GNUPG_HOME)
+        if GNUPG_ENCODING is not None:
+            gpg.encoding = GNUPG_ENCODING
+        return gpg
+
 # Used internally
 encrypt_kwargs = {
     'always_trust': ALWAYS_TRUST,
@@ -75,9 +81,7 @@ def send_mail(subject, body_text, addr_from, recipient_list,
                                             .values_list('address', 'use_asc'))
         # Create the gpg object.
         if key_addresses:
-            gpg = GPG(gnupghome=GNUPG_HOME)
-            if GNUPG_ENCODING is not None:
-                gpg.encoding = GNUPG_ENCODING
+            gpg = get_gpg()
 
     # Check if recipient has a gpg key installed
     def has_pgp_key(addr):
