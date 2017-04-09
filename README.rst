@@ -17,7 +17,7 @@ local web browser during development is also provided.
 Dependencies
 ============
 
-  * `python-gnupg <http://code.google.com/p/python-gnupg/>`_ is
+  * `python-gnupg <https://bitbucket.org/vinay.sajip/python-gnupg>`_ is
     required for sending PGP encrypted email.
 
 
@@ -25,7 +25,7 @@ Installation
 ============
 
 The easiest way to install django-email-extras is directly from PyPi
-using `pip <http://www.pip-installer.org/>`_ by running the command
+using `pip <https://pip.pypa.io/en/stable/>`_ by running the command
 below::
 
     $ pip install -U django-email-extras
@@ -55,9 +55,9 @@ these functions will PGP encrypt emails as described below.
 Sending PGP Encrypted Email
 ===========================
 
-`PGP explanation <http://en.wikipedia.org/wiki/Pretty_Good_Privacy>`_
+`PGP explanation <https://en.wikipedia.org/wiki/Pretty_Good_Privacy>`_
 
-Using `python-gnupg <http://code.google.com/p/python-gnupg/>`_, two
+Using `python-gnupg <https://bitbucket.org/vinay.sajip/python-gnupg>`_, two
 models are defined in ``email_extras.models`` - ``Key`` and ``Address``
 which represent a PGP key and an email address for a successfully
 imported key. These models exist purely for the sake of importing
@@ -125,7 +125,7 @@ There are two settings you can configure in your project's
   * ``EMAIL_EXTRAS_GNUPG_ENCODING`` - String representing a gnupg encoding.
     Defaults to GNUPG ``latin-1`` and could be changed to e.g. ``utf-8``
     if needed.  Check out
-    `python-gnupg docs <https://pythonhosted.org/python-gnupg/index.html/>`_
+    `python-gnupg docs <https://pythonhosted.org/python-gnupg/#getting-started>`_
     for more info.
   * ``EMAIL_EXTRAS_ALWAYS_TRUST_KEYS`` - Skip key validation and assume
     that used keys are always fully trusted.
