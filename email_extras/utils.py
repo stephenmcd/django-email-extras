@@ -2,7 +2,7 @@ from __future__ import with_statement
 from os.path import basename
 from warnings import warn
 
-from django.template import loader, Context
+from django.template import loader
 from django.core.mail import EmailMultiAlternatives, get_connection
 from django.utils import six
 from django.utils.encoding import smart_text
@@ -141,7 +141,7 @@ def send_mail_template(subject, template, addr_from, recipient_list,
     # Loads a template passing in vars as context.
     def render(ext):
         name = "email_extras/%s.%s" % (template, ext)
-        return loader.get_template(name).render(Context(context))
+        return loader.get_template(name).render(context)
 
     send_mail(subject, render("txt"), addr_from, recipient_list,
               fail_silently=fail_silently, attachments=attachments,
