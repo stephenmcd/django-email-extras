@@ -4,13 +4,11 @@ from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
-from email_extras.settings import USE_GNUPG, GNUPG_HOME
-from email_extras.utils import addresses_for_key
+from email_extras.settings import USE_GNUPG
+from email_extras.utils import addresses_for_key, get_gpg
 
 
 if USE_GNUPG:
-    from gnupg import GPG
-
     @python_2_unicode_compatible
     class Key(models.Model):
         """
@@ -36,7 +34,7 @@ if USE_GNUPG:
             return ",".join(str(address) for address in self.address_set.all())
 
         def save(self, *args, **kwargs):
-            gpg = GPG(gnupghome=GNUPG_HOME)
+            gpg = get_gpg()
             result = gpg.import_keys(self.key)
 
             addresses = []
@@ -73,7 +71,7 @@ if USE_GNUPG:
             """
             Remove any keys for this address.
             """
-            gpg = GPG(gnupghome=GNUPG_HOME)
+            gpg = get_gpg()
             for key in gpg.list_keys():
                 if self.address in addresses_for_key(gpg, key):
                     gpg.delete_keys(key["fingerprint"], True)

@@ -3,9 +3,8 @@ from __future__ import unicode_literals
 
 from django.db import migrations, models
 import django.db.models.deletion
-from gnupg import GPG
 
-from email_extras.settings import GNUPG_HOME
+from email_extras.utils import get_gpg
 
 
 def forward_change(apps, schema_editor):
@@ -16,7 +15,7 @@ def forward_change(apps, schema_editor):
         addresses = Address.objects.filter(address__in=key.addresses.split(','))
         addresses.update(key=key)
 
-        gpg = GPG(gnupghome=GNUPG_HOME)
+        gpg = get_gpg()
         result = gpg.import_keys(key.key)
         key.fingerprint = result.fingerprints[0]
         key.save()

@@ -1,4 +1,5 @@
 from __future__ import with_statement
+
 from os.path import basename
 from warnings import warn
 
@@ -7,16 +8,52 @@ from django.core.mail import EmailMultiAlternatives, get_connection
 from django.utils import six
 from django.utils.encoding import smart_text
 
-from email_extras.settings import (USE_GNUPG, GNUPG_HOME, ALWAYS_TRUST,
-                                   GNUPG_ENCODING)
+from gnupg import GPG
+
+from email_extras.settings import (ALWAYS_TRUST, GNUPG_ENCODING, GNUPG_HOME,
+                                   USE_GNUPG, SIGNING_KEY_FINGERPRINT)
 
 
 if USE_GNUPG:
     from gnupg import GPG
 
+    def get_gpg():
+        gpg = GPG(gnupghome=GNUPG_HOME)
+        if GNUPG_ENCODING is not None:
+            gpg.encoding = GNUPG_ENCODING
+        return gpg
+
+# Used internally
+encrypt_kwargs = {
+    'always_trust': ALWAYS_TRUST,
+    'sign': SIGNING_KEY_FINGERPRINT,
+}
+
 
 class EncryptionFailedError(Exception):
     pass
+
+
+class BadSigningKeyError(KeyError):
+    pass
+
+
+def check_signing_key():
+    if USE_GNUPG and SIGNING_KEY_FINGERPRINT is not None:
+        gpg = get_gpg()
+        try:
+            gpg.list_keys(True).key_map[SIGNING_KEY_FINGERPRINT]
+        except KeyError as e:
+            raise BadSigningKeyError(
+                "The key specified by the "
+                "EMAIL_EXTRAS_SIGNING_KEY_FINGERPRINT setting "
+                "({fp}) does not exist in the GPG keyring. Adjust the "
+                "EMAIL_EXTRAS_GNUPG_HOME setting (currently set to "
+                "{gnupg_home}, correct the key fingerprint, or generate a new "
+                "key by running python manage.py email_signing_key --generate "
+                "to fix.".format(
+                    fp=SIGNING_KEY_FINGERPRINT,
+                    gnupg_home=GNUPG_HOME))
 
 
 def addresses_for_key(gpg, key):
@@ -69,9 +106,7 @@ def send_mail(subject, body_text, addr_from, recipient_list,
                                             .values_list('address', 'use_asc'))
         # Create the gpg object.
         if key_addresses:
-            gpg = GPG(gnupghome=GNUPG_HOME)
-            if GNUPG_ENCODING is not None:
-                gpg.encoding = GNUPG_ENCODING
+            gpg = get_gpg()
 
     # Check if recipient has a gpg key installed
     def has_pgp_key(addr):
@@ -80,8 +115,7 @@ def send_mail(subject, body_text, addr_from, recipient_list,
     # Encrypts body if recipient has a gpg key installed.
     def encrypt_if_key(body, addr_list):
         if has_pgp_key(addr_list[0]):
-            encrypted = gpg.encrypt(body, addr_list[0],
-                                    always_trust=ALWAYS_TRUST)
+            encrypted = gpg.encrypt(body, addr_list[0], **encrypt_kwargs)
             if encrypted == "" and body != "":  # encryption failed
                 raise EncryptionFailedError("Encrypting mail to %s failed.",
                                             addr_list[0])
