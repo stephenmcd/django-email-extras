@@ -63,7 +63,12 @@ if USE_GNUPG:
             verbose_name_plural = _("Addresses")
 
         address = models.EmailField(blank=True)
-        key = models.ForeignKey('email_extras.Key', null=True, editable=False)
+        key = models.ForeignKey(
+            'email_extras.Key', 
+            null=True, 
+            editable=False,
+            on_delete=models.CASCADE
+        )
         use_asc = models.BooleanField(default=False, editable=False)
 
         def __str__(self):
