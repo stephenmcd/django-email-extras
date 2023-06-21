@@ -4,7 +4,7 @@ from warnings import warn
 
 from django.template import loader
 from django.core.mail import EmailMultiAlternatives, get_connection
-from django.utils import six
+import six
 from django.utils.encoding import smart_text
 
 from email_extras.settings import (USE_GNUPG, GNUPG_HOME, ALWAYS_TRUST,
